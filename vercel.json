@@ -1,8 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/proxy/",
-      "destination": "http://api.valantis.store:40000/"
+      "source": "/path*",
+      "destination": "http://api.valantis.store:40000/:path*"
+    },
+    {
+      "source": "/path*/",
+      "destination": "http://api.valantis.store:40000/:path*/"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
