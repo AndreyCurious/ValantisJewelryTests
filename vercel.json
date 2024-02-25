@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/path*",
+      "source": "path*",
       "destination": "http://api.valantis.store:40000/:path*"
     },
     {
-      "source": "/path*/",
+      "source": "path*/",
       "destination": "http://api.valantis.store:40000/:path*/"
     },
     {
