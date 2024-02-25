@@ -3,7 +3,7 @@ import md5 from "md5";
 
 function App() {
   const getData = async () => {
-    const response = await fetch('/', {
+    const response = await fetch('', {
       method: "POST",
       headers: {
         "X-Auth": "70e9e15f52c7209ab6b6f80b795aa4f2",
