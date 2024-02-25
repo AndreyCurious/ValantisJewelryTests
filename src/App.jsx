@@ -3,7 +3,7 @@ import md5 from "md5";
 
 function App() {
   const getData = async () => {
-    const response = await fetch('http://api.valantis.store:40000', {
+    const response = await fetch('https://api.valantis.store:41000/', {
       method: "POST",
       headers: {
         "X-Auth": "70e9e15f52c7209ab6b6f80b795aa4f2",
