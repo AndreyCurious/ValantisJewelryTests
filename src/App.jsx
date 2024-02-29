@@ -1,26 +1,17 @@
 import React from "react";
-import md5 from "md5";
+import PageLayout from "./components/page-layout";
+import CatalogList from "./containers/catalog-list";
 
 function App() {
-  const getData = async () => {
-    const response = await fetch('https://api.valantis.store:41000/', {
-      method: "POST",
-      headers: {
-        "X-Auth": "70e9e15f52c7209ab6b6f80b795aa4f2",
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        "action": "get_ids",
-        "params": { "offset": 10, "limit": 3 }
-      })
 
-    })
-    console.log(await response.json())
-    return response;
-  }
-  getData()
+  // почему то на vercel не перезаписывает запрос на прокси, хотя конфиг я написал - vercel.json (выдает 405 ошибку), 
+  // так бы можно было использовать сокращенный url для запроса - "/"
+  // в вебпаке прокси работает нормально
+
   return (
-    <div> </div>
+    <PageLayout>
+      <CatalogList />
+    </PageLayout>
   )
 }
 

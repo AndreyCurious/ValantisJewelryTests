@@ -1,5 +1,5 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-console.log(process.env.NODE_ENV)
+
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
