@@ -7,7 +7,7 @@ import arrayDuplicateFilter from '../../utils/array-dublicate-filter';
  * Состояние каталога - параметры фильтра и список товара
  */
 class CatalogState extends StoreModule {
-  
+
   /**
    * Начальное состояние
    * @return {Object}
@@ -28,22 +28,22 @@ class CatalogState extends StoreModule {
     }
   }
 
-  async loadPage(page) {
-    const { limit, offset } = this.getState().params
+  changePage(page) {
     this.setState({
       ...this.getState(),
       params: {
         ...this.getState().params,
-        page: page
-      },
+        page: page,
+      }
+    });
+  }
+
+  async setList() {
+    this.setState({
+      ...this.getState(),
       waiting: true
     });
-    await this.setList(limit, offset)
-
-  } 
-
-  async setList(limit,offset) {
-    const { page } = this.getState().params
+    const { page, limit, offset } = this.getState().params;
     const password = 'Valantis';
     const today = new Date().toISOString().slice(0, 10).split('-').join('');
     const xAuth = md5(`${password}_${today}`);
@@ -69,13 +69,13 @@ class CatalogState extends StoreModule {
         });
       } catch (e) {
         console.log(e);
-        requestIds(filtredArray);
+        await requestIds(filtredArray);
       }
     }
-
     const oldLimit = limit;
     const requestItems = async (limit) => {
       try {
+
         const data = await fetch('https://api.valantis.store:41000/', {
           method: "POST",
           headers: {
@@ -90,38 +90,26 @@ class CatalogState extends StoreModule {
         const jsonData = await data.json();
         const filtredArray = arrayDuplicateFilter(jsonData.result);
         if (filtredArray.length < oldLimit) {
-          requestItems(limit + 1);
+          await requestItems(limit + 1);
         } else {
           this.setState({
             ...this.getState(),
             params: {
               offsets: this.getState().offsets.push(limit),
               ...this.getState().params,
-              offset: this.getState().offsets.slice(0, page).reduce((acc, number) => acc + number, 0)
+              offset: this.getState().offsets.slice(0, page + 1).reduce((acc, number) => acc + number, 0)
             },
           });
-          requestIds(filtredArray);
+          await requestIds(filtredArray);
 
         }
       } catch (e) {
-        requestItems(limit);
+        await requestItems(limit);
         console.log(e)
       }
     }
-
     requestItems(limit);
   }
-
-  async loadProducts() {
-    this.setState({
-      ...this.getState(),
-      waiting: true
-    })
-    const { limit, offset } = this.getState().params
-    await this.setList(limit, offset);
-
-  }
-
 }
 
 

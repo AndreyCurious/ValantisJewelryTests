@@ -6,14 +6,9 @@ import List from '../../components/list';
 import Pagination from '../../components/pagination';
 import Spinner from '../../components/spinner';
 import useInit from '../../hooks/use-init';
-
+import CatalogFilter from '../catalog-filter';
 function CatalogList() {
   const store = useStore();
-  useInit(async () => {
-    await Promise.all([
-      store.actions.catalog.loadProducts(),
-    ]);
-  }, [], true);
 
   const select = useSelector(state => ({
     list: state.catalog.list,
@@ -25,17 +20,21 @@ function CatalogList() {
     count: state.catalog.count,
     waiting: state.catalog.waiting,
   }));
-  console.log(select)
+  useInit(async () => {
+    await Promise.all([
+      store.actions.catalog.setList(),
+    ]);
+  }, [select.page], true);
 
   const callbacks = {
     // Пагинация
-    onPaginate: useCallback(page => store.actions.catalog.loadPage(page), [store]),
+    onPaginate: useCallback((page) => store.actions.catalog.changePage(page), [store]),
   }
 
 
   const renders = {
     item: useCallback(item => (
-      <Item item={item}/>
+      <Item item={item} />
     ), [callbacks.addToBasket]),
   };
 
