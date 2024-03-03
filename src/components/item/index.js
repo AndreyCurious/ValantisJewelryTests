@@ -12,7 +12,9 @@ function Item(props) {
   return (
     <div className={cn()}>
       <div className={cn('title')}>
-        <p>{props.item.title}</p>
+        <p>{props.item.id}</p>
+        <p>Бренд: {props.item.brand !== null ? props.item.brand : 'Неизвестен'}</p>
+        <p>{props.item.product}</p>
       </div>
       <div className={cn('actions')}>
         <div className={cn('price')}>{numberFormat(props.item.price)} {props.labelCurr}</div>

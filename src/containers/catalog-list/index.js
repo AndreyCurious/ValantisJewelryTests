@@ -11,7 +11,7 @@ function CatalogList() {
   const store = useStore();
   useInit(async () => {
     await Promise.all([
-      store.actions.catalog.initParams(),
+      store.actions.catalog.loadProducts(),
     ]);
   }, [], true);
 
@@ -29,22 +29,13 @@ function CatalogList() {
 
   const callbacks = {
     // Пагинация
-    onPaginate: useCallback(page => store.actions.catalog.setParams({ page }), [store]),
-    // генератор ссылки для пагинатора
-    makePaginatorLink: useCallback((page) => {
-      return `?${new URLSearchParams({
-        page,
-        limit: select.limit,
-        sort: select.sort,
-        query: select.query
-      })}`;
-    }, [select.limit, select.sort, select.query])
+    onPaginate: useCallback(page => store.actions.catalog.loadPage(page), [store]),
   }
 
 
   const renders = {
     item: useCallback(item => (
-      <Item item={item} onAdd={callbacks.addToBasket} link={`/articles/${item._id}`} />
+      <Item item={item}/>
     ), [callbacks.addToBasket]),
   };
 
@@ -52,7 +43,7 @@ function CatalogList() {
     <Spinner active={select.waiting}>
       <List list={select.list} renderItem={renders.item} />
       <Pagination count={select.count} page={select.page} limit={select.limit}
-        onChange={callbacks.onPaginate} makeLink={callbacks.makePaginatorLink} />
+        onChange={callbacks.onPaginate} />
     </Spinner>
   );
 }
