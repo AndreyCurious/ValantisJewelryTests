@@ -4,6 +4,7 @@ import useSelector from '../../hooks/use-selector';
 import Select from '../../components/select';
 import Input from '../../components/input';
 import SideLayout from '../../components/side-layout';
+import Spinner from '../../components/spinner';
 
 function CatalogFilter() {
 
@@ -12,21 +13,26 @@ function CatalogFilter() {
   const select = useSelector(state => ({
     query: state.catalog.params.query,
     category: state.catalog.params.category,
+    waiting: state.catalog.waiting
   }));
 
   const callbacks = {
     onCategory: useCallback(category => store.actions.catalog.changeCategory(category), [store]),
+    onSetList: useCallback(() => store.actions.catalog.setList(), [store]),
+    onQuery: useCallback((query) => store.actions.catalog.changeCategory(query),[store])
   };
 
   const categories = ["---", "Бренд", "Цена", "Название продукта"]
 
   return (
-    <SideLayout padding='medium'>
+    <Spinner active={select.waiting}>
+      <SideLayout padding='medium'>
       <Select options={categories} value={select.category} onChange={callbacks.onCategory} />
-      <Input value={select.query} onChange={callbacks.onSearch} placeholder={'Поиск'}
-        delay={1000} />
-      <button onClick={callbacks.onReset}>Найти</button>
+      <Input value={select.query} onChange={callbacks.onQuery} placeholder={'Поиск'}
+      />
+      <button disabled={} onClick={() => {}}>Найти</button>
     </SideLayout>
+    </Spinner>
   )
 }
 

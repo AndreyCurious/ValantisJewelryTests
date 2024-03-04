@@ -20,6 +20,7 @@ function CatalogList() {
     count: state.catalog.count,
     waiting: state.catalog.waiting,
   }));
+  console.log(select)
   useInit(async () => {
     await Promise.all([
       store.actions.catalog.setList(),
@@ -35,7 +36,7 @@ function CatalogList() {
   const renders = {
     item: useCallback(item => (
       <Item item={item} />
-    ), [callbacks.addToBasket]),
+    )),
   };
 
   return (

@@ -19,7 +19,7 @@ class CatalogState extends StoreModule {
       params: {
         page: 1,
         limit: 5,
-        sort: 'order',
+        sort: '---',
         query: '',
         offset: 0
       },
@@ -27,7 +27,24 @@ class CatalogState extends StoreModule {
       waiting: false
     }
   }
-
+  changeCategory(category) {
+    this.setState({
+      ...this.getState(),
+      params: {
+        ...this.getState().params,
+        sort: category,
+      }
+    });
+  }
+  changeQuery(string) {
+    this.setState({
+      ...this.getState(),
+      params: {
+        ...this.getState().params,
+        query: string
+      }
+    });
+  }
   changePage(page) {
     this.setState({
       ...this.getState(),
@@ -43,10 +60,42 @@ class CatalogState extends StoreModule {
       ...this.getState(),
       waiting: true
     });
-    const { page, limit, offset } = this.getState().params;
+    const { page, limit, offset, sort, query } = this.getState().params;
     const password = 'Valantis';
     const today = new Date().toISOString().slice(0, 10).split('-').join('');
     const xAuth = md5(`${password}_${today}`);
+      // почему то на vercel не перезаписывает запрос на прокси, хотя конфиг я написал - vercel.json (выдает 405 ошибку), 
+      // так бы можно было использовать сокращенный url для запроса - "/"
+      // в вебпаке прокси работает нормально
+    const requestSort = async (sort, query) => {
+      // не понимаю, почему не сделали в методе фильтр параметры на limit и offset, чтобы точно также постранично делать запросы, как с обычным выводом товара
+      // я вывел все фильтрованные товары на одну страницу
+      // можно было сделать постранично, записывая все товары в лист и разбивая этот массив на лимит, но мне кажется это неправильной практикой 
+      try {
+        const getItems = await fetch('https://api.valantis.store:41000/', {
+          method: "POST",
+          headers: {
+            "X-Auth": xAuth,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            "action": "filter",
+            "params": { [sort]: query }
+          })
+        })
+        const getItemsJson = await getItems.json();
+        const filtredObject = objectDuplicateFilter(getItemsJson.result, 'id');
+        this.setState({
+          ...this.getState(),
+          list: filtredObject,
+          waiting: false
+        });
+        await requestIds(filtredArray);
+      } catch (e) {
+        console.log(e);
+        await requestSort(sort, query)
+      }
+    }
     const requestIds = async (filtredArray) => {
       try {
         const getItems = await fetch('https://api.valantis.store:41000/', {
@@ -67,6 +116,7 @@ class CatalogState extends StoreModule {
           list: filtredObject,
           waiting: false
         });
+        
       } catch (e) {
         console.log(e);
         await requestIds(filtredArray);
@@ -108,7 +158,11 @@ class CatalogState extends StoreModule {
         console.log(e)
       }
     }
-    requestItems(limit);
+    if (sort === '---' && query === "") {
+      requestItems(limit);
+    }else {
+      requestSort(sort, query)
+    }
   }
 }
 
