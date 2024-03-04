@@ -6,7 +6,6 @@ import List from '../../components/list';
 import Pagination from '../../components/pagination';
 import Spinner from '../../components/spinner';
 import useInit from '../../hooks/use-init';
-import CatalogFilter from '../catalog-filter';
 function CatalogList() {
   const store = useStore();
 

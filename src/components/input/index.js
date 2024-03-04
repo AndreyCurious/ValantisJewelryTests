@@ -10,8 +10,8 @@ function Input(props) {
 
   // Обработчик изменений в поле
   const onChange = (event) => {
-    setValue(event.target.value);
-    props.onChange(event.target.value);
+    setValue(event.target.value.trim());
+    props.onChange(event.target.value.trim());
   };
 
   // Обновление стейта, если передан новый value
@@ -23,7 +23,7 @@ function Input(props) {
     <input
       className={cn({ theme: props.theme })}
       value={value}
-      type={props.type}
+      type={props.typeSort === 'Цена' ? 'number' : 'text'}
       placeholder={props.placeholder}
       onChange={onChange}
     />

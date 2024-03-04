@@ -20,6 +20,11 @@ class CatalogState extends StoreModule {
         page: 1,
         limit: 5,
         sort: '---',
+        sorts: {
+          'Цена': "price",
+          "Бренд": "brand",
+          "Название": "product"
+        },
         query: '',
         offset: 0
       },
@@ -56,22 +61,22 @@ class CatalogState extends StoreModule {
   }
 
   async setList() {
-    this.setState({
-      ...this.getState(),
-      waiting: true
-    });
     const { page, limit, offset, sort, query } = this.getState().params;
     const password = 'Valantis';
     const today = new Date().toISOString().slice(0, 10).split('-').join('');
     const xAuth = md5(`${password}_${today}`);
-      // почему то на vercel не перезаписывает запрос на прокси, хотя конфиг я написал - vercel.json (выдает 405 ошибку), 
-      // так бы можно было использовать сокращенный url для запроса - "/"
-      // в вебпаке прокси работает нормально
+    // почему то на vercel не перезаписывает запрос на прокси, хотя конфиг я написал - vercel.json (выдает 405 ошибку), 
+    // так бы можно было использовать сокращенный url для запроса - "/"
+    // в вебпаке прокси работает нормально
     const requestSort = async (sort, query) => {
       // не понимаю, почему не сделали в методе фильтр параметры на limit и offset, чтобы точно также постранично делать запросы, как с обычным выводом товара
       // я вывел все фильтрованные товары на одну страницу
-      // можно было сделать постранично, записывая все товары в лист и разбивая этот массив на лимит, но мне кажется это неправильной практикой 
+      // можно было бы сделать постранично, записывая все товары в лист и разбивая этот массив на лимит, но мне кажется это неправильной практикой
       try {
+        console.log(param === "Цена" ? Number(query) : String(query))
+
+        const param = this.getState().params.sorts[sort];
+        console.log(param)
         const getItems = await fetch('https://api.valantis.store:41000/', {
           method: "POST",
           headers: {
@@ -80,16 +85,11 @@ class CatalogState extends StoreModule {
           },
           body: JSON.stringify({
             "action": "filter",
-            "params": { [sort]: query }
+            "params": { [param]: param === "price" ? Number(query) : String(query) }
           })
         })
         const getItemsJson = await getItems.json();
-        const filtredObject = objectDuplicateFilter(getItemsJson.result, 'id');
-        this.setState({
-          ...this.getState(),
-          list: filtredObject,
-          waiting: false
-        });
+        const filtredArray = arrayDuplicateFilter(getItemsJson.result, 'id');
         await requestIds(filtredArray);
       } catch (e) {
         console.log(e);
@@ -116,7 +116,7 @@ class CatalogState extends StoreModule {
           list: filtredObject,
           waiting: false
         });
-        
+
       } catch (e) {
         console.log(e);
         await requestIds(filtredArray);
@@ -158,10 +158,14 @@ class CatalogState extends StoreModule {
         console.log(e)
       }
     }
+    this.setState({
+      ...this.getState(),
+      waiting: true
+    });
     if (sort === '---' && query === "") {
-      requestItems(limit);
-    }else {
-      requestSort(sort, query)
+      await requestItems(limit);
+    } else {
+      await requestSort(sort, query)
     }
   }
 }

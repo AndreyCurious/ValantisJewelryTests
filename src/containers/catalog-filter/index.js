@@ -12,27 +12,25 @@ function CatalogFilter() {
 
   const select = useSelector(state => ({
     query: state.catalog.params.query,
-    category: state.catalog.params.category,
+    sort: state.catalog.params.sort,
     waiting: state.catalog.waiting
   }));
 
   const callbacks = {
     onCategory: useCallback(category => store.actions.catalog.changeCategory(category), [store]),
     onSetList: useCallback(() => store.actions.catalog.setList(), [store]),
-    onQuery: useCallback((query) => store.actions.catalog.changeCategory(query),[store])
+    onQuery: useCallback((query) => store.actions.catalog.changeQuery(query), [store])
   };
 
-  const categories = ["---", "Бренд", "Цена", "Название продукта"]
+  const categories = ["---", "Бренд", "Цена", "Название"]
 
   return (
-    <Spinner active={select.waiting}>
-      <SideLayout padding='medium'>
+    <SideLayout padding='medium'>
       <Select options={categories} value={select.category} onChange={callbacks.onCategory} />
-      <Input value={select.query} onChange={callbacks.onQuery} placeholder={'Поиск'}
+      <Input typeSort={select.sort} value={select.query} onChange={callbacks.onQuery} placeholder={'Поиск'}
       />
-      <button disabled={} onClick={() => {}}>Найти</button>
+      <button disabled={(select.query === '' || select.sort === '---') || select.waiting === true} onClick={callbacks.onSetList}>Найти</button>
     </SideLayout>
-    </Spinner>
   )
 }
 
