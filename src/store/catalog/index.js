@@ -18,7 +18,7 @@ class CatalogState extends StoreModule {
       offsets: [0],
       params: {
         page: 1,
-        limit: 5,
+        limit: 2,
         sort: '---',
         sorts: {
           'Цена': "price",
@@ -26,6 +26,7 @@ class CatalogState extends StoreModule {
           "Название": "product"
         },
         query: '',
+        decrement: false,
         offset: 0
       },
       count: 0,
@@ -51,6 +52,46 @@ class CatalogState extends StoreModule {
     });
   }
   changePage(page) {
+    if (page === 1) {
+      this.setState({
+        ...this.getState(),
+        offsets: [0],
+        params: {
+          ...this.getState().params,
+          offset: 0,
+          page: 1,
+        },
+      });
+    } else {
+      if (this.getState().params.page < page) {
+        this.setState({
+          ...this.getState(),
+          params: {
+            ...this.getState().params,
+            decrement: false
+          }
+        });
+      } else {
+        this.setState({
+          ...this.getState(),
+          params: {
+            ...this.getState().params,
+            decrement: true
+          }
+        });
+        this.setState({
+          ...this.getState(),
+          offsets: [0, ...this.getState().offsets.slice(1, -2)],
+          params: {
+            ...this.getState().params,
+            offset: this.getState().offsets.slice(0, page).reduce((acc, number) => acc + number, 0),
+            page: page,
+          },
+        });
+      }
+
+
+    }
     this.setState({
       ...this.getState(),
       params: {
@@ -61,7 +102,7 @@ class CatalogState extends StoreModule {
   }
 
   async setList() {
-    const { page, limit, offset, sort, query } = this.getState().params;
+    const { decrement, page, limit, offset, sort, query } = this.getState().params;
     const password = 'Valantis';
     const today = new Date().toISOString().slice(0, 10).split('-').join('');
     const xAuth = md5(`${password}_${today}`);
@@ -73,10 +114,7 @@ class CatalogState extends StoreModule {
       // я вывел все фильтрованные товары на одну страницу
       // можно было бы сделать постранично, записывая все товары в лист и разбивая этот массив на лимит, но мне кажется это неправильной практикой
       try {
-        console.log(param === "Цена" ? Number(query) : String(query))
-
         const param = this.getState().params.sorts[sort];
-        console.log(param)
         const getItems = await fetch('https://api.valantis.store:41000/', {
           method: "POST",
           headers: {
@@ -124,8 +162,10 @@ class CatalogState extends StoreModule {
     }
     const oldLimit = limit;
     const requestItems = async (limit) => {
-      try {
+      if (decrement) {
 
+      }
+      try {
         const data = await fetch('https://api.valantis.store:41000/', {
           method: "POST",
           headers: {
@@ -142,19 +182,27 @@ class CatalogState extends StoreModule {
         if (filtredArray.length < oldLimit) {
           await requestItems(limit + 1);
         } else {
-          this.setState({
-            ...this.getState(),
-            params: {
-              offsets: this.getState().offsets.push(limit),
-              ...this.getState().params,
-              offset: this.getState().offsets.slice(0, page + 1).reduce((acc, number) => acc + number, 0)
-            },
-          });
+          if (!decrement || page === 1) {
+            this.setState({
+              ...this.getState(),
+              offsets: [...this.getState().offsets, limit],
+            });
+            this.setState({
+              ...this.getState(),
+              params: {
+                ...this.getState().params,
+                offset: this.getState().offsets.slice(0, page + 1).reduce((acc, number) => acc + number, 0)
+              },
+            });
+          }
+
+          console.log(this.getState().params)
+          console.log(this.getState().offsets)
           await requestIds(filtredArray);
 
         }
       } catch (e) {
-        await requestItems(limit);
+        await requestItems(limit)
         console.log(e)
       }
     }
