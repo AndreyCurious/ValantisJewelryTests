@@ -13,18 +13,15 @@ function CatalogList() {
     list: state.catalog.list,
     page: state.catalog.params.page,
     limit: state.catalog.params.limit,
-    offset: state.catalog.params.offset,
-    offsets: state.catalog.offsets,
-    sort: state.catalog.params.sort,
-    query: state.catalog.params.query,
     waiting: state.catalog.waiting,
+    offset: state.catalog.params.offset
   }));
   useInit(async () => {
     await Promise.all([
       store.actions.catalog.setList(),
     ]);
   }, [select.page], true);
-
+console.log(select)
   const callbacks = {
     // Пагинация
     onPaginate: useCallback((page) => store.actions.catalog.changePage(page), [store]),
@@ -36,12 +33,16 @@ function CatalogList() {
       <Item item={item} />
     )),
   };
-
+  console.log(select.list.length === 0)
   return (
     <Spinner active={select.waiting}>
-      <List list={select.list} renderItem={renders.item} />
+      <List list={select.list} renderItem={renders.item} page={select.page} />
+      {select.page === 'sortedPage' ?
+      <></>
+      :
       <Pagination count={select.count} page={select.page} limit={select.limit}
         onChange={callbacks.onPaginate} />
+      }
     </Spinner>
   );
 }

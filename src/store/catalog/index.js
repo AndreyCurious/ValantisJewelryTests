@@ -13,12 +13,13 @@ class CatalogState extends StoreModule {
    * @return {Object}
    */
   initState() {
+    // в последствии params забиваются в строку url, чтобы при перезагрузке страницы вернуться к той же странице с товарами
     return {
       list: [],
       offsets: [0],
       params: {
         page: 1,
-        limit: 2,
+        limit: 50,
         sort: '---',
         sorts: {
           'Цена': "price",
@@ -29,7 +30,6 @@ class CatalogState extends StoreModule {
         decrement: false,
         offset: 0
       },
-      count: 0,
       waiting: false
     }
   }
@@ -51,63 +51,52 @@ class CatalogState extends StoreModule {
       }
     });
   }
+  resetFilter() {
+    this.setState({
+      ...this.getState(),
+      offsets: [0],
+      params: {
+        ...this.getState().params,
+        query: '',
+        page: 1,
+        offset: 0,
+        sort: '---'
+      }
+    });
+  }
   changePage(page) {
-    if (page === 1) {
-      this.setState({
-        ...this.getState(),
-        offsets: [0],
-        params: {
-          ...this.getState().params,
-          offset: 0,
-          page: 1,
-        },
-      });
-    } else {
       if (this.getState().params.page < page) {
         this.setState({
           ...this.getState(),
           params: {
             ...this.getState().params,
-            decrement: false
+            decrement: false,
+            page: page,
           }
         });
       } else {
         this.setState({
           ...this.getState(),
+          offsets: [0, ...this.getState().offsets.slice(1, -1)],
           params: {
             ...this.getState().params,
-            decrement: true
-          }
-        });
-        this.setState({
-          ...this.getState(),
-          offsets: [0, ...this.getState().offsets.slice(1, -2)],
-          params: {
-            ...this.getState().params,
+            decrement: true,
             offset: this.getState().offsets.slice(0, page).reduce((acc, number) => acc + number, 0),
             page: page,
           },
         });
       }
-
-
-    }
-    this.setState({
-      ...this.getState(),
-      params: {
-        ...this.getState().params,
-        page: page,
-      }
-    });
   }
 
   async setList() {
+    // задача стояла выводить 50 продуктов
+    // так как попадаются одинаковые id, я сделал так - если после фильтрации айтемов меньше 50, то запрос перевыполняется, добирая необходимое до лимита количество айтемов, след страницы будут выполнять запрос, учитвая, что кроме 50 айтемов с предыдущей страницы нужно оффсетнуть еще и повторяющиейся
     const { decrement, page, limit, offset, sort, query } = this.getState().params;
     const password = 'Valantis';
     const today = new Date().toISOString().slice(0, 10).split('-').join('');
     const xAuth = md5(`${password}_${today}`);
     // почему то на vercel не перезаписывает запрос на прокси, хотя конфиг я написал - vercel.json (выдает 405 ошибку), 
-    // так бы можно было использовать сокращенный url для запроса - "/"
+    // так бы можно было использовать url для запроса - "/"
     // в вебпаке прокси работает нормально
     const requestSort = async (sort, query) => {
       // не понимаю, почему не сделали в методе фильтр параметры на limit и offset, чтобы точно также постранично делать запросы, как с обычным выводом товара
@@ -162,9 +151,6 @@ class CatalogState extends StoreModule {
     }
     const oldLimit = limit;
     const requestItems = async (limit) => {
-      if (decrement) {
-
-      }
       try {
         const data = await fetch('https://api.valantis.store:41000/', {
           method: "POST",
@@ -195,11 +181,7 @@ class CatalogState extends StoreModule {
               },
             });
           }
-
-          console.log(this.getState().params)
-          console.log(this.getState().offsets)
           await requestIds(filtredArray);
-
         }
       } catch (e) {
         await requestItems(limit)
@@ -210,9 +192,16 @@ class CatalogState extends StoreModule {
       ...this.getState(),
       waiting: true
     });
-    if (sort === '---' && query === "") {
+    if (sort === '---' && query === "" ) {
       await requestItems(limit);
     } else {
+      this.setState({
+        ...this.getState(),
+        params: {
+          ...this.getState().params, 
+          page: 'sortedPage'
+        }
+      })
       await requestSort(sort, query)
     }
   }

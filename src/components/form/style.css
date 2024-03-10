@@ -1,0 +1,9 @@
+.Form {
+	display: flex;
+}
+.Form-item {
+	padding-right: 10px;
+}
+.Form-btn {
+	margin-right: 10px;
+}

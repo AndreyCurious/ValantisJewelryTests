@@ -1,9 +1,8 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { cn as bem } from '@bem-react/classname';
 import numberFormat from '../../utils/number-format';
 import './style.css';
-import { Link } from 'react-router-dom';
 
 function Item(props) {
 
@@ -25,21 +24,13 @@ function Item(props) {
 
 Item.propTypes = {
   item: PropTypes.shape({
-    _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    title: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     price: PropTypes.number
   }).isRequired,
-  link: PropTypes.string,
-  onAdd: PropTypes.func,
-  labelCurr: PropTypes.string,
-  labelAdd: PropTypes.string
 };
 
 Item.defaultProps = {
-  onAdd: () => {
-  },
   labelCurr: '₽',
-  labelAdd: 'Добавить'
 }
 
 export default memo(Item);

@@ -21,7 +21,7 @@ function Input(props) {
 
   return (
     <input
-      className={cn({ theme: props.theme })}
+      className={cn()}
       value={value}
       type={props.typeSort === 'Цена' ? 'number' : 'text'}
       placeholder={props.placeholder}
@@ -32,18 +32,9 @@ function Input(props) {
 
 Input.propTypes = {
   value: PropTypes.string,
-  name: PropTypes.string,
-  type: PropTypes.string,
+  typeSort: PropTypes.string,
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
-  theme: PropTypes.string,
-}
-
-Input.defaultProps = {
-  onChange: () => {
-  },
-  type: 'text',
-  theme: ''
 }
 
 export default memo(Input);
